@@ -15,6 +15,7 @@ obj/
 *.user
 .vs/
 TestResults/
+client-windows/publish/
 
 # Windows
 Thumbs.db
