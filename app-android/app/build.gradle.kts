@@ -1,12 +1,12 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.tetherpars.app"
-    compileSdk = 34
+    // compileSdk 37: required by androidx.core 1.15.0 (minSdk 26 / targetSdk 34 unchanged per plan)
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.tetherpars.app"
@@ -25,9 +25,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
