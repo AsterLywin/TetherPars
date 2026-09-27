@@ -6,6 +6,7 @@ local.properties
 app-android/build/
 app-android/app/build/
 app-android/.gradle/
+app-android/*.log
 *.apk
 *.aab
 
