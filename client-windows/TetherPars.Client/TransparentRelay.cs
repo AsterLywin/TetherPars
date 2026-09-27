@@ -94,6 +94,8 @@ internal sealed class TransparentRelay : IDisposable
     }
 
     public int TcpConnections => _tcp.ConnectionCount;
+    public long BytesUp => _tcp.BytesToRemote;
+    public long BytesDown => _tcp.BytesToLocal;
 
     private void Pump()
     {

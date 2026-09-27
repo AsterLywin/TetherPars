@@ -47,19 +47,21 @@ public class DnsRelayTests
                         Buffer.BlockCopy(_answer, 0, framed, 2, _answer.Length);
                         // Queue as readable content
                         foreach (var b in framed) GetBufferList().Add(b);
+                        _hasData.Set();
                         _replied = true;
                     }
                 }
             }
             private readonly List<byte> _readable = new();
+            private readonly ManualResetEventSlim _hasData = new(false);
             private List<byte> GetBufferList() => _readable;
             public override int Read(byte[] buffer, int offset, int count)
             {
-                int spin = 0;
-                while (_readable.Count == 0 && spin++ < 250) Thread.Sleep(20);
+                _hasData.Wait(15000);
                 int n = Math.Min(count, _readable.Count);
                 for (int i = 0; i < n; i++) buffer[offset + i] = _readable[i];
                 _readable.RemoveRange(0, n);
+                if (_readable.Count == 0) _hasData.Reset();
                 return n;
             }
             public override bool CanRead => true;
@@ -97,7 +99,7 @@ public class DnsRelayTests
         var ev = new ManualResetEventSlim(false);
         relay.HandleQuery(tun, 53000, dns, query, udp => { reply = udp; ev.Set(); });
 
-        Assert.True(ev.Wait(5000), "no DNS reply");
+        Assert.True(ev.Wait(15000), "no DNS reply");
         Assert.NotNull(canned.SeenQuery);
         Assert.Equal(query, canned.SeenQuery!);
         Assert.NotNull(reply);

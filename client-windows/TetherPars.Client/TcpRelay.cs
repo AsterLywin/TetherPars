@@ -129,6 +129,11 @@ internal sealed class TcpRelay : IDisposable
 
     public int ConnectionCount { get { lock (_lock) return _conns.Count; } }
 
+    private long _bytesToRemote;
+    private long _bytesToLocal;
+    public long BytesToRemote => Interlocked.Read(ref _bytesToRemote);
+    public long BytesToLocal => Interlocked.Read(ref _bytesToLocal);
+
     public void HandlePacket(byte[] ipPkt)
     {
         if (!IpPackets.TryParseIpv4(ipPkt, out var ip) || ip.Protocol != IpPackets.ProtoTcp) return;
@@ -195,6 +200,7 @@ internal sealed class TcpRelay : IDisposable
                     {
                         lock (c.WriteLock) { c.Remote!.Write(payload, 0, payload.Length); c.Remote.Flush(); }
                         c.PeerSeq += (uint)len;
+                        Interlocked.Add(ref _bytesToRemote, len);
                     }
                     catch { SendRstToConn(c); CloseConn(key); return; }
                 }
@@ -279,6 +285,7 @@ internal sealed class TcpRelay : IDisposable
                         (byte)(IpPackets.TcpAck | IpPackets.TcpPsh), data);
                     cc.OurSeq += (uint)n;
                     cc.LastActivity = Environment.TickCount64;
+                    Interlocked.Add(ref _bytesToLocal, n);
                     try { _send(pkt); } catch { return; }
                 }
             }

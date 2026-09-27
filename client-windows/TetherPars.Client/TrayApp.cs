@@ -47,6 +47,10 @@ public sealed class TrayApp : IDisposable
     public bool Transparent => Status == ConnectionStatus.ConnectedTransparent;
 
     public event Action? StatusChanged;
+    public event Action<string>? LogMessage;
+
+    public (int Conns, long Up, long Down)? RelayStats =>
+        _relay == null ? null : (_relay.TcpConnections, _relay.BytesUp, _relay.BytesDown);
 
     private readonly ProxyConnector _connector;
     private readonly TunAdapter _tun;
@@ -68,12 +72,14 @@ public sealed class TrayApp : IDisposable
     public bool Connect(string host, int port, string phoneVersion)
     {
         Set(ConnectionStatus.Connecting, "Connecting…");
+        Log($"Connect to {host}:{port} ...");
 
         var (ok, msg) = VersionHandshake.CheckPhoneHello(
             VersionHandshake.BuildHello(phoneVersion), VersionHandshake.CurrentVersion);
         if (!ok)
         {
             Set(ConnectionStatus.VersionMismatch, msg);
+            Log(msg);
             return false;
         }
 
@@ -81,8 +87,10 @@ public sealed class TrayApp : IDisposable
         if (!probe.TestViaAdbForward())
         {
             Set(ConnectionStatus.Error, ErrorCatalog.PhoneNotFound);
+            Log(ErrorCatalog.PhoneNotFound);
             return false;
         }
+        Log("Phone proxy reachable.");
 
         try
         {
@@ -100,19 +108,22 @@ public sealed class TrayApp : IDisposable
                 return true;
             }
             Set(ConnectionStatus.ConnectedTransparent, $"Connected (transparent) via {host}:{port}");
+            Log("Transparent mode ON.");
             return true;
         }
-        catch (InvalidOperationException ex)
-        {
-            // No wintun.dll etc: manual-proxy fallback still gives browser internet.
-            Set(ConnectionStatus.ConnectedManualProxy, $"Connected (manual proxy {host}:{port}). {ex.Message}");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Set(ConnectionStatus.Error, ex.Message);
-            return false;
-        }
+            catch (InvalidOperationException ex)
+            {
+                // No wintun.dll etc: manual-proxy fallback still gives browser internet.
+                Set(ConnectionStatus.ConnectedManualProxy, $"Connected (manual proxy {host}:{port}). {ex.Message}");
+                Log("Transparent unavailable, manual-proxy mode.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Set(ConnectionStatus.Error, ex.Message);
+                Log("Error: " + ex.Message);
+                return false;
+            }
     }
 
     public void Disconnect()
@@ -121,6 +132,7 @@ public sealed class TrayApp : IDisposable
         _relay = null;
         try { _tun.Down(); } catch { }
         Set(ConnectionStatus.Disconnected, "Disconnected");
+        Log("Disconnected.");
     }
 
     public void Dispose()
@@ -138,5 +150,10 @@ public sealed class TrayApp : IDisposable
         Status = status;
         StatusMessage = message;
         StatusChanged?.Invoke();
+    }
+
+    private void Log(string message)
+    {
+        try { LogMessage?.Invoke($"[{DateTime.Now:HH:mm:ss}] {message}"); } catch { }
     }
 }
