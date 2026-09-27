@@ -1,0 +1,25 @@
+# Android
+*.iml
+.gradle/
+local.properties
+.idea/
+app-android/build/
+app-android/app/build/
+app-android/.gradle/
+*.apk
+*.aab
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Git worktrees
+.worktrees/
+worktrees/
