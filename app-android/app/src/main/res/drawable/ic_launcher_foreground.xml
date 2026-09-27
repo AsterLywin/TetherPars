@@ -1,0 +1,44 @@
+<!-- TetherPars launcher foreground (108dp adaptive, optical center ~72dp).
+     Phone node + laptop node joined by a link, with signal arcs. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- link bar between the two nodes -->
+    <path
+        android:strokeWidth="9"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:pathData="M42,64 L66,44" />
+
+    <!-- phone node (bottom-left) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,60 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" />
+    <path
+        android:fillColor="#0E3B35"
+        android:pathData="M36,66 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0" />
+
+    <!-- laptop node (top-right) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,28 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" />
+    <path
+        android:fillColor="#0E3B35"
+        android:pathData="M72,34 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0" />
+
+    <!-- signal arcs above the laptop node -->
+    <path
+        android:strokeWidth="5"
+        android:strokeColor="#7CFFC4"
+        android:strokeLineCap="round"
+        android:pathData="M72,12 A26,26 0 0,1 98,38" />
+    <path
+        android:strokeWidth="5"
+        android:strokeColor="#7CFFC4"
+        android:strokeLineCap="round"
+        android:strokeAlpha="0.55"
+        android:pathData="M72,2 A36,36 0 0,1 108,38" />
+</vector>
