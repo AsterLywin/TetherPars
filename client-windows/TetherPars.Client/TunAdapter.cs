@@ -21,6 +21,8 @@ public sealed class TunAdapter : IDisposable
 
     public bool IsUp => _adapter != IntPtr.Zero && _session != IntPtr.Zero;
 
+    internal IntPtr Session => _session;
+
     public void Up(string tunnelAddress = "10.6.0.2", string phoneAddress = "192.168.49.1")
     {
         if (IsUp) return;
@@ -65,6 +67,44 @@ public sealed class TunAdapter : IDisposable
         _disposed = true;
         Down();
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>Tries one non-blocking receive. False = ring empty.</summary>
+    public bool TryReceive(out byte[] packet)
+    {
+        packet = Array.Empty<byte>();
+        if (_session == IntPtr.Zero) return false;
+        IntPtr p = WintunNative.WintunReceivePacket(_session, out uint size);
+        if (p == IntPtr.Zero) return false; // NO_MORE_ITEMS (or EOF->session dying)
+        try
+        {
+            packet = new byte[size];
+            Marshal.Copy(p, packet, 0, (int)size);
+            return true;
+        }
+        finally
+        {
+            WintunNative.WintunReleaseReceivePacket(_session, p);
+        }
+    }
+
+    /// <summary>Blocks up to timeoutMs for readability.</summary>
+    public void WaitReadable(int timeoutMs)
+    {
+        if (_session == IntPtr.Zero) return;
+        IntPtr ev = WintunNative.WintunGetReadWaitEvent(_session);
+        if (ev != IntPtr.Zero)
+            WintunNative.WaitForSingleObject(ev, (uint)Math.Max(0, timeoutMs));
+    }
+
+    /// <summary>Sends one IP packet toward Windows. Drops silently when ring is full.</summary>
+    public void SendPacket(byte[] packet)
+    {
+        if (_session == IntPtr.Zero || packet.Length == 0) return;
+        IntPtr p = WintunNative.WintunAllocateSendPacket(_session, (uint)packet.Length);
+        if (p == IntPtr.Zero) return;
+        Marshal.Copy(packet, 0, p, packet.Length);
+        WintunNative.WintunSendPacket(_session, p);
     }
 
     private static void ConfigureAddress(string address)

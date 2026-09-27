@@ -50,6 +50,7 @@ public sealed class TrayApp : IDisposable
 
     private readonly ProxyConnector _connector;
     private readonly TunAdapter _tun;
+    private TransparentRelay? _relay;
     private bool _disposed;
 
     public TrayApp() : this(new ProxyConnector(), new TunAdapter()) { }
@@ -85,7 +86,19 @@ public sealed class TrayApp : IDisposable
 
         try
         {
-            _tun.Up(phoneAddress: host);
+            const string tunnelAddress = "10.6.0.2";
+            _tun.Up(tunnelAddress, phoneAddress: host);
+            try
+            {
+                var relayConnector = new ProxyRemoteConnector(host, port);
+                _relay = new TransparentRelay(_tun,
+                    System.Net.IPAddress.Parse(tunnelAddress), relayConnector);
+            }
+            catch (Exception ex)
+            {
+                Set(ConnectionStatus.ConnectedManualProxy, $"Connected (manual proxy {host}:{port}). Relay: {ex.Message}");
+                return true;
+            }
             Set(ConnectionStatus.ConnectedTransparent, $"Connected (transparent) via {host}:{port}");
             return true;
         }
@@ -104,6 +117,8 @@ public sealed class TrayApp : IDisposable
 
     public void Disconnect()
     {
+        try { _relay?.Dispose(); } catch { }
+        _relay = null;
         try { _tun.Down(); } catch { }
         Set(ConnectionStatus.Disconnected, "Disconnected");
     }
@@ -112,6 +127,8 @@ public sealed class TrayApp : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        try { _relay?.Dispose(); } catch { }
+        _relay = null;
         try { _tun.Dispose(); } catch { }
         GC.SuppressFinalize(this);
     }
