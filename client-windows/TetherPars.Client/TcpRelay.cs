@@ -98,7 +98,7 @@ internal sealed class TcpRelay : IDisposable
     private readonly int _timeoutMs;
     private readonly Dictionary<string, Conn> _conns = new();
     private readonly object _lock = new();
-    private readonly Timer _sweeper;
+    private readonly System.Threading.Timer _sweeper;
     private bool _disposed;
     private static readonly Random _rand = new();
 
@@ -124,7 +124,7 @@ internal sealed class TcpRelay : IDisposable
         _connector = connector;
         _send = sendToTun;
         _timeoutMs = timeoutMs;
-        _sweeper = new Timer(_ => Sweep(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        _sweeper = new System.Threading.Timer(_ => Sweep(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
     }
 
     public int ConnectionCount { get { lock (_lock) return _conns.Count; } }
