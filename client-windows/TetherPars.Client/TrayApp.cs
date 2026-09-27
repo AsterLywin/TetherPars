@@ -1,6 +1,30 @@
 namespace TetherPars.Client;
 
 /// <summary>
+/// Task 8: Persian error catalog (fixed text, no complex logic).
+/// Shown in the tray error menu and mirrored in Android Help.
+/// </summary>
+public static class ErrorCatalog
+{
+    public const string PhoneNotFound =
+        "گوشی پیدا نشد: USB Debugging روشن است؟ کابل اصلی است؟";
+    public const string VersionMismatch =
+        "Version Mismatched: نسخه ویندوز و گوشی یکی نیست، هر دو را آپدیت کن";
+    public const string AdbConflict =
+        "Conflict adb.exe: مسیر c:\\program files (x86) را چک کن و adb را rename کن";
+    public const string DropCode1 =
+        "قطعی code=1: پورت USB را عوض کن، لپ‌تاپ به شارژ باشد";
+
+    public static IReadOnlyList<string> ErrorMenu { get; } = new[]
+    {
+        PhoneNotFound,
+        VersionMismatch,
+        AdbConflict,
+        DropCode1,
+    };
+}
+
+/// <summary>
 /// Task 7: tray controller behind the "Connect" button.
 /// Flow: version handshake → proxy road check → transparent mode
 /// (TunAdapter/wintun) with manual-proxy fallback. Version mismatch
@@ -55,7 +79,7 @@ public sealed class TrayApp : IDisposable
         var probe = new ProxyConnector(host, port, _connector.TimeoutMs);
         if (!probe.TestViaAdbForward())
         {
-            Set(ConnectionStatus.Error, "Phone not found: is USB Debugging on? Is the cable original?");
+            Set(ConnectionStatus.Error, ErrorCatalog.PhoneNotFound);
             return false;
         }
 
