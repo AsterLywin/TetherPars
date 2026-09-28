@@ -25,3 +25,9 @@ Desktop.ini
 # Git worktrees
 .worktrees/
 worktrees/
+
+# Web (Vite)
+node_modules/
+dist/
+.vite/
+*.local

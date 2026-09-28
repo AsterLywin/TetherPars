@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Gradle start up script for UN*X
+#
+# Generated for TetherPars Task 1 skeleton (Gradle 9.7.1 wrapper)
+#
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
+CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+exec java -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
