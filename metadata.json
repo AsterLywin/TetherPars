@@ -1,0 +1,6 @@
+{
+  "name": "TetherPars",
+  "description": "TetherPars mobile-to-PC internet sharing hub and proxy monitor with USB, WiFi Direct, and Bluetooth transports.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
